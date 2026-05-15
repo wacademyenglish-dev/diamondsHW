@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WOLF LABS | Detective Assessment (A1+)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: Playfair Display (Noir), Special Elite (Typewriter), Inter (UI) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mg-navy: #1e1b4b;       
+            --mg-panel: #312e81;      
+            --mg-hover: #3730a3;      
+            --mg-gold: #fbbf24;       
+            --mg-crimson: #be123c;    
+            --mg-green: #10b981;      
+            --mg-text: #f8fafc;       
+            --mg-muted: #94a3b8;      
+        }
+
+        body { 
+            background: #020617; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; 
+            font-family: 'Inter', sans-serif; overflow: hidden; 
+            background-image: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 80%);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2 { font-family: 'Playfair Display', serif; }
+        .font-typewriter { font-family: 'Special Elite', cursive; }
+
+        #phone-frame { width: 375px; height: 812px; background: var(--mg-navy); border-radius: 40px; border: 12px solid #0f172a; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(251,191,36,0.1); max-height: 100vh;}
+        .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: #0f172a; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; z-index: 50; }
+        
+        .mg-ambient {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5;
+            background: radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.15) 0%, transparent 60%);
+        }
+
+        .btn-option {
+            background: var(--mg-panel); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 1.2rem; transition: all 0.2s ease;
+            text-align: left; font-family: 'Inter', sans-serif; font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); color: var(--mg-text); font-weight: 500;
+        }
+        .btn-option:active { transform: scale(0.98); }
+        .btn-option.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--mg-green); color: var(--mg-green); }
+        .btn-option.wrong { background: rgba(190, 18, 60, 0.15); border-color: var(--mg-crimson); color: #fca5a5; }
+
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+        
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Confetti Canvas */
+        #confetti { position: fixed; top:0; left:0; pointer-events: none; z-index: 99; }
+        
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="phone-frame">
+        <div class="mg-ambient"></div>
+        <div class="notch"></div>
+        
+        <!-- UI Header -->
+        <header class="pt-12 pb-4 px-6 bg-[var(--mg-navy)] border-b border-[var(--mg-gold)]/30 flex justify-between items-center z-40 relative shadow-md backdrop-blur-md">
+            <div class="font-playfair font-black text-white text-lg tracking-widest uppercase">WOLF<span class="text-[var(--mg-gold)]">HW</span></div>
+            <div class="text-[10px] font-mono font-bold text-[var(--mg-muted)] bg-[var(--mg-panel)] px-2 py-1 rounded border border-white/10" id="q-counter">Q 01/15</div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-1 bg-[var(--mg-panel)] z-40 relative">
+            <div id="progress-bar" class="h-full bg-[var(--mg-gold)] transition-all duration-300 shadow-[0_0_10px_rgba(251,191,36,0.8)]" style="width: 0%"></div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-5 flex flex-col h-[calc(100%-90px)] overflow-y-auto relative z-20 hide-scroll">
+            
+            <!-- Start Screen -->
+            <div id="screen-start" class="flex flex-col items-center justify-center h-full text-center fade-in">
+                <div class="w-24 h-24 bg-[var(--mg-panel)] rounded-full flex items-center justify-center border border-[var(--mg-gold)]/50 mb-6 shadow-[0_0_30px_rgba(251,191,36,0.2)]">
+                    <i class="fas fa-fingerprint text-5xl text-[var(--mg-gold)] drop-shadow-md"></i>
+                </div>
+                <p class="text-[10px] font-bold text-[var(--mg-gold)] uppercase tracking-[0.3em] font-mono bg-[var(--mg-gold)]/10 px-3 py-1 rounded mb-4">Official Exam</p>
+                <h2 class="text-4xl font-black text-white tracking-widest uppercase mb-4 leading-tight">Case <br> <span class="text-[var(--mg-gold)] italic">Review</span></h2>
+                <p class="text-[var(--mg-muted)] mb-10 font-medium text-sm px-4">Test your deduction skills. Master Past Simple, Conditionals and Modals.</p>
+                <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-[#fbbf24] to-[#d97706] text-[#0f172a] font-bold font-inter text-lg uppercase tracking-widest py-4 rounded shadow-[0_4px_15px_rgba(251,191,36,0.3)] hover:brightness-110 transition-all">Begin Review</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="screen-quiz" class="hidden flex-col h-full fade-in pt-2">
+                <div class="flex-1 flex flex-col justify-center">
+                    <div class="bg-[var(--mg-panel)] border border-white/10 p-6 rounded-lg relative mb-8 shadow-lg">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--mg-gold)] to-transparent opacity-50 rounded-t-lg"></div>
+                        <p class="text-[10px] text-[var(--mg-muted)] font-mono tracking-widest uppercase mb-3"><i class="fas fa-search text-[var(--mg-crimson)] animate-pulse mr-1"></i> Investigation Note</p>
+                        <p id="question-text" class="font-playfair text-2xl font-bold text-white text-center leading-snug tracking-wide"></p>
+                    </div>
+                    
+                    <div id="options-container" class="flex flex-col gap-3">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+                <button id="next-btn" onclick="nextQuestion()" class="hidden mt-6 w-full bg-[var(--mg-panel)] text-white border border-[var(--mg-gold)]/50 font-bold font-inter text-sm uppercase tracking-widest py-4 rounded hover:bg-[var(--mg-gold)] hover:text-[#0f172a] transition-all shadow-md">Next File <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="screen-result" class="hidden flex-col items-center justify-start h-full text-center fade-in pt-8 pb-10">
+                <p class="text-[10px] font-bold text-[var(--mg-navy)] uppercase tracking-widest mb-6 bg-[var(--mg-gold)] px-4 py-1.5 rounded-sm font-mono shadow-sm">Case Closed</p>
+                
+                <div class="w-32 h-32 bg-[var(--mg-panel)] rounded-full border-4 flex items-center justify-center mb-6 shadow-2xl relative mx-auto" id="result-circle">
+                    <div class="absolute inset-2 border border-white/20 rounded-full border-dashed"></div>
+                    <span id="final-rank" class="text-6xl font-black text-white font-playfair uppercase tracking-tighter z-10">S</span>
+                </div>
+                
+                <h2 id="final-title" class="text-3xl font-black text-white uppercase tracking-widest mb-2 font-playfair">Chief Detective</h2>
+                <p class="text-[var(--mg-muted)] font-mono mb-8 uppercase tracking-widest text-xs">Score: <span id="final-score" class="font-bold text-lg">0</span></p>
+                
+                <div class="bg-[var(--mg-panel)] p-5 rounded-lg w-full border border-white/10 mb-8 shadow-inner text-left">
+                    <p class="text-[10px] font-bold text-[var(--mg-gold)] uppercase tracking-widest mb-3 font-mono border-b border-white/10 pb-2">Debriefing</p>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-300 text-sm">Evidence Found:</span>
+                        <span id="correct-count" class="text-white font-bold font-mono">0/15</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-300 text-sm">Deduction Accuracy:</span>
+                        <span id="accuracy-percent" class="text-[var(--mg-gold)] font-bold font-mono">0%</span>
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="bg-transparent border border-white/20 text-white w-full py-4 rounded font-bold font-inter text-sm tracking-widest uppercase hover:border-[var(--mg-gold)] hover:text-[var(--mg-gold)] transition-colors mt-auto">Reopen Case</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "The thief _____ the painting last night.", o: ["stole", "steals", "stealed"], a: 0 },
+            { q: "The guard was sleeping, so he _____ see the thief.", o: ["can't", "couldn't", "wouldn't"], a: 1 },
+            { q: "If you touch the glass, the alarm _____ ring.", o: ["will", "would", "did"], a: 0 },
+            { q: "He has very small hands. He _____ be Arthur!", o: ["mustn't", "can't", "couldn't"], a: 1 },
+            { q: "They _____ a red glove on the floor.", o: ["finded", "found", "find"], a: 1 },
+            { q: "If Marco _____ to the museum, the police will catch him.", o: ["goes", "go", "went"], a: 0 },
+            { q: "The window is broken. The thief _____ be very strong.", o: ["can't", "must", "could"], a: 1 },
+            { q: "Mr. Sterling has a broken leg. He _____ climb the wall.", o: ["couldn't", "shouldn't", "must"], a: 0 },
+            { q: "If we find the diamond, we _____ close the case.", o: ["will", "are", "do"], a: 0 },
+            { q: "Arthur _____ his coffee at midnight.", o: ["drinks", "drank", "drunk"], a: 1 },
+            { q: "The acrobat is very agile. It _____ be him!", o: ["must", "can't", "won't"], a: 0 },
+            { q: "If the guard _____, the thief will steal the art.", o: ["sleeps", "sleep", "slept"], a: 0 },
+            { q: "The thief _____ away into the darkness.", o: ["run", "ran", "runned"], a: 1 },
+            { q: "Marco wasn't at home. He _____ be the thief.", o: ["must", "can't", "couldn't"], a: 0 },
+            { q: "If I _____ the suspect, I will call you.", o: ["see", "sees", "saw"], a: 0 }
+        ];
+
+        let currentQ = 0; let score = 0; let correctAnswers = 0;
+        let timeStart = 0; let locked = false;
+
+        function startQuiz() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            document.getElementById('screen-quiz').classList.add('flex');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            locked = false;
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            const q = questions[currentQ];
+            document.getElementById('q-counter').innerText = `Q ${String(currentQ + 1).padStart(2, '0')}/${questions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQ) / questions.length) * 100}%`;
+            
+            const formattedQ = q.q.replace('_____', '<span class="text-[var(--mg-gold)] underline decoration-wavy px-4">_____</span>');
+            document.getElementById('question-text').innerHTML = `"${formattedQ}"`;
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option group';
+                btn.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 border border-gray-600 bg-[#1e1b4b] flex items-center justify-center text-xs font-bold text-[var(--mg-muted)] mr-4 font-mono group-hover:border-[var(--mg-gold)] transition-colors rounded shadow-inner">${String.fromCharCode(65+idx)}</div>
+                        <span>${opt}</span>
+                    </div>
+                `;
+                btn.onclick = () => checkAnswer(idx, btn);
+                optsContainer.appendChild(btn);
+            });
+
+            timeStart = Date.now();
+        }
+
+        function checkAnswer(selectedIdx, btnEl) {
+            if (locked) return;
+            locked = true;
+
+            const q = questions[currentQ];
+            const isCorrect = (selectedIdx === q.a);
+            const timeTaken = (Date.now() - timeStart) / 1000;
+            
+            const buttons = document.getElementById('options-container').children;
+
+            if (isCorrect) {
+                btnEl.classList.add('correct');
+                btnEl.querySelector('div').classList.replace('text-[var(--mg-muted)]', 'text-[var(--mg-green)]');
+                btnEl.querySelector('div').classList.replace('border-gray-600', 'border-[var(--mg-green)]');
+                correctAnswers++;
+                // Base 100 + Speed Bonus (Max 50)
+                let speedBonus = Math.max(0, Math.floor(50 - (timeTaken * 5)));
+                score += (100 + speedBonus);
+            } else {
+                btnEl.classList.add('wrong', 'shake');
+                btnEl.querySelector('div').classList.replace('text-[var(--mg-muted)]', 'text-[var(--mg-crimson)]');
+                btnEl.querySelector('div').classList.replace('border-gray-600', 'border-[var(--mg-crimson)]');
+                
+                // Show correct
+                const correctBtn = buttons[q.a];
+                correctBtn.classList.add('correct');
+                correctBtn.querySelector('div').classList.replace('text-[var(--mg-muted)]', 'text-[var(--mg-green)]');
+                correctBtn.querySelector('div').classList.replace('border-gray-600', 'border-[var(--mg-green)]');
+            }
+
+            for(let b of buttons) { b.style.pointerEvents = 'none'; }
+            
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('fade-in');
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < questions.length) {
+                document.getElementById('screen-quiz').classList.remove('fade-in');
+                void document.getElementById('screen-quiz').offsetWidth; 
+                document.getElementById('screen-quiz').classList.add('fade-in');
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('screen-quiz').classList.remove('flex');
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('progress-bar').style.width = `100%`;
+            
+            const resScreen = document.getElementById('screen-result');
+            resScreen.classList.remove('hidden'); resScreen.classList.add('flex');
+
+            // Counter animation
+            const el = document.getElementById('final-score');
+            let current = 0;
+            const target = score;
+            const inc = Math.ceil(target / 20);
+            const timer = setInterval(() => {
+                current += inc;
+                if (current >= target) { el.innerText = target; clearInterval(timer); } 
+                else { el.innerText = current; }
+            }, 30);
+            
+            document.getElementById('correct-count').innerText = `${correctAnswers}/${questions.length}`;
+            const acc = Math.round((correctAnswers / questions.length) * 100);
+            document.getElementById('accuracy-percent').innerText = `${acc}%`;
+
+            let rank = 'C'; let title = 'CIVILIAN'; let color = '#94a3b8';
+            if (acc >= 90) { rank = 'S'; title = 'CHIEF DETECTIVE'; color = '#10b981'; shootConfetti(); }
+            else if (acc >= 75) { rank = 'A'; title = 'LEAD INVESTIGATOR'; color = '#fbbf24'; shootConfetti(); }
+            else if (acc >= 50) { rank = 'B'; title = 'ROOKIE OP'; color = '#f8fafc'; }
+
+            const rankEl = document.getElementById('final-rank');
+            rankEl.innerText = rank;
+            document.getElementById('result-circle').style.borderColor = color;
+            document.getElementById('result-circle').style.boxShadow = `0 0 40px ${color}40`;
+            rankEl.style.color = color;
+            
+            document.getElementById('final-title').innerText = title;
+            document.getElementById('final-title').style.color = color;
+        }
+
+        function shootConfetti() {
+            const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const pieces = []; const colors = ['#fbbf24', '#be123c', '#f8fafc'];
+            for(let i=0; i<60; i++) pieces.push({ x: canvas.width/2, y: canvas.height, vx: (Math.random()-0.5)*15, vy: (Math.random()-1)*15-5, size: Math.random()*6+4, color: colors[Math.floor(Math.random()*colors.length)] });
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); let active = false;
+                pieces.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.3; if(p.y < canvas.height) active = true;
+                    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size);
+                });
+                if(active) requestAnimationFrame(animate); else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
